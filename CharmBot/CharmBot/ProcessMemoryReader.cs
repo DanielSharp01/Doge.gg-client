@@ -25,7 +25,11 @@ namespace CharmBot
             byte[] buffer = new byte[bytesToRead];
             IntPtr pBytesRead;
             ProcessMemoryReaderApi.ReadProcessMemory(handle, new IntPtr(address), buffer, bytesToRead, out pBytesRead);
-            bytesRead = pBytesRead.ToInt32();
+            try
+            {
+                bytesRead = pBytesRead.ToInt32();
+            }
+            catch (Exception) { bytesRead = (int)bytesToRead; }
             return buffer;
         }
 
