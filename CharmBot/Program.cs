@@ -18,14 +18,6 @@ namespace CharmBot
             var gameClient = new GameClient();
 #if CHARM_BOT
             await gameClient.GetChampions();
-            gameClient.CharmBotCharmCast += async () => await socket?.Send(new JObject
-            {
-                ["type"] = "charmCast",
-            });
-            gameClient.CharmBotCharmHit += async () => await socket?.Send(new JObject
-            {
-                ["type"] = "charmHit",
-            });
 #endif
             gameClient.ClientConnected += async (players, activePlayerName) => await socket?.Send(new JObject
             {

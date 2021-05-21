@@ -41,6 +41,31 @@ namespace CharmBot
                 ClientCertificateOptions = ClientCertificateOption.Manual,
                 ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) => true
             });
+
+#if CHARM_BOT
+            CharmBotCharmCast += (time) =>
+            {
+                var eventObj = new JObject
+                {
+                    ["EventName"] = "CharmCast",
+                    ["CharmerName"] = activePlayerName,
+                    ["EventTime"] = time,
+                };
+                GotEvents?.Invoke(new JObject[] { eventObj });
+            };
+            CharmBotCharmHit += (time, charmee) =>
+            {
+                var eventObj = new JObject
+                {
+                    ["EventName"] = "CharmHit",
+                    ["CharmerName"] = activePlayerName,
+                    ["CharmeeName"] = players.FirstOrDefault(p => p?["championName"]?.ToString()?.Replace(" ", "") == charmee)?["summonerName"] ?? charmee,
+                    ["EventTime"] = time,
+                };
+                events.Add(eventObj);
+                GotEvents?.Invoke(new JObject[] { eventObj });
+            };
+#endif
         }
 
         private async Task<JArray> requestLiveDataPlayers()
@@ -130,8 +155,8 @@ namespace CharmBot
         }
 
 #if CHARM_BOT
-        public event Action CharmBotCharmCast;
-        public event Action CharmBotCharmHit;
+        public event Action<float> CharmBotCharmCast;
+        public event Action<float, string> CharmBotCharmHit;
 
         private HashSet<string> champions;
         private Thread charmBotThread = null;
@@ -186,15 +211,15 @@ namespace CharmBot
                         var ahriCharmBuff = champ.ActiveBuffs.FirstOrDefault(b => b.Name == "AhriSeduce" && gameTime < b.EndTime && charmEffectSeenAt < b.StartTime);
                         if (ahriCharmBuff != null)
                         {
-                            if (!seenCharm) CharmBotCharmCast?.Invoke();
-                            CharmBotCharmHit?.Invoke();
+                            if (!seenCharm) CharmBotCharmCast?.Invoke(gameTime);
+                            CharmBotCharmHit?.Invoke(gameTime, champ.Name);
                             charmEffectSeenAt = ahriCharmBuff.StartTime;
                         }
                     }
 
                     if (ahriCharm != null)
                     {
-                        if (!seenCharm) CharmBotCharmCast?.Invoke();
+                        if (!seenCharm) CharmBotCharmCast?.Invoke(gameTime);
                         seenCharm = true;
                     }
                     else
