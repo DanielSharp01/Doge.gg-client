@@ -22,6 +22,14 @@ namespace Doge.gg_client
     public partial class MainWindow : Window
     {
         JsonWebsocket socket = new JsonWebsocket(new Uri("ws://localhost:5050"));
+        public TaskBarClickCommand TaskBarClickCommand { get; }
+        private bool forRealClose;
+
+        public MainWindow()
+        {
+            TaskBarClickCommand = new TaskBarClickCommand(this);
+            DataContext = this;
+        }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -72,6 +80,44 @@ namespace Doge.gg_client
         private void Window_Unloaded(object sender, RoutedEventArgs e)
         {
             socket.Disconnect();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (forRealClose) return;
+            Hide();
+            e.Cancel = true;
+        }
+
+        private void Open_Clicked(object sender, RoutedEventArgs e)
+        {
+            TaskBarClickCommand.Execute(null);
+        }
+
+        private void Close_Clicked(object sender, RoutedEventArgs e)
+        {
+            forRealClose = true;
+            Close();
+        }
+    }
+
+    public class TaskBarClickCommand : ICommand
+    {
+        Window window;
+        public TaskBarClickCommand(Window window)
+        {
+            this.window = window;
+        }
+        public event EventHandler CanExecuteChanged;
+
+        public bool CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        public void Execute(object parameter)
+        {
+            window.Show();
         }
     }
 }

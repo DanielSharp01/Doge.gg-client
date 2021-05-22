@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Doge.gg_client"
+        xmlns:local="clr-namespace:Doge.gg_client" xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="Doge.gg client" Height="150" Width="550" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
+        Title="Doge.gg client" Height="150" Width="550" Loaded="Window_Loaded" Unloaded="Window_Unloaded" Closing="Window_Closing">
     <Grid HorizontalAlignment="Center">
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -21,5 +21,17 @@
                 <Rectangle Name="processMemoryIndicator" Width="30" Height="30" Margin="10 0 0 0" Fill="Gray" Stroke="Black"></Rectangle>
             </StackPanel>
         </StackPanel>
+        <tb:TaskbarIcon
+          IconSource="icon.ico"
+          DoubleClickCommand="{Binding TaskBarClickCommand}"
+          ToolTipText="Doge.gg client">
+
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Open" Click="Open_Clicked"  />
+                    <MenuItem Header="Exit" Click="Close_Clicked" />
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
     </Grid>
 </Window>
