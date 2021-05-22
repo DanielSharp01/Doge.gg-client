@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace CharmBot
+namespace Doge.gg_client
 {
 
     public class ProcessMemoryReader

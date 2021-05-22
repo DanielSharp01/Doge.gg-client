@@ -1,4 +1,4 @@
-﻿namespace CharmBot
+﻿namespace Doge.gg_client
 {
     public class Offsets
     {

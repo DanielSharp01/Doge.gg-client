@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Doge.gg_client</RootNamespace>
+    <UseWPF>true</UseWPF>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <DefineConstants>CHARM_BOT</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(DefineConstants.Contains('CHARM_BOT'))">
+    <Compile Include="CharmBot\Buff.cs" />
+    <Compile Include="CharmBot\Offsets.cs" />
+    <Compile Include="CharmBot\ProcessMemoryReader.cs" />
+    <Compile Include="CharmBot\ProcessMemoryReaderApi.cs" />
+  </ItemGroup>
+
+</Project>

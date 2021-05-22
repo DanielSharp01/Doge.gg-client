@@ -6,12 +6,14 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
-
-namespace CharmBot
+namespace Doge.gg_client
 {
     public class GameClient
     {
+        public event Action<bool> ClientStatusChanged;
+        public event Action<bool> MemoryReaderStatusChanged;
         public event Action<JObject[], string> ClientConnected;
         public event Action<JObject[]> GotEvents;
         public event Action ClientDisconnected;
@@ -22,13 +24,14 @@ namespace CharmBot
         private JObject[] players = null;
         private string activePlayerName = null;
         private bool gameRunning = false;
+        private Dispatcher dispatcher = Dispatcher.CurrentDispatcher;
         private async Task<JToken> requestLiveClientData(string endpoint)
         {
             try
             {
                 return JToken.Parse(await client.GetStringAsync(LiveClientDataUrl + "/" + endpoint));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
@@ -107,6 +110,7 @@ namespace CharmBot
             while (true)
             {
                 await waitForGame();
+                ClientStatusChanged?.Invoke(true);
                 ClientConnected?.Invoke(players, activePlayerName);
 #if CHARM_BOT
                 if (players.FirstOrDefault(p => p["summonerName"].ToString() == activePlayerName && p["championName"].ToString() == "Ahri") != null)
@@ -116,6 +120,7 @@ namespace CharmBot
                 }
 #endif
                 await processEvents();
+                ClientStatusChanged?.Invoke(false);
 #if CHARM_BOT
                 charmBotThread?.Interrupt();
 #endif
@@ -194,6 +199,9 @@ namespace CharmBot
             var process = Process.GetProcesses().Where(p => p.ProcessName.ToLower().Contains("league of legends")).FirstOrDefault();
             var reader = new ProcessMemoryReader() { Process = process };
             reader.Open();
+            dispatcher.BeginInvoke((Action)(() => {
+                MemoryReaderStatusChanged?.Invoke(true);
+            }));
             try
             {
                 GameObject localPlayer = new GameObject(reader, reader.ReadInt(reader.ModuleBaseAddr + Offsets.LocalPlayer));
@@ -234,6 +242,9 @@ namespace CharmBot
             }
             finally
             {
+                dispatcher.BeginInvoke((Action)(() => {
+                    MemoryReaderStatusChanged?.Invoke(false);
+                }));
                 reader.Close();
             }
         }

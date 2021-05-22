@@ -7,16 +7,18 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CharmBot
+namespace Doge.gg_client
 {
     public class JsonWebsocket
     {
         private static string uuid = Guid.NewGuid().ToString();
         private Uri uri;
         public event Action<JObject> RecievedMessage;
+        public event Action<bool> ConnectionStatusChanged;
         private CancellationTokenSource cancellationToken;
         private CancellationTokenSource cancellationRecieveToken;
         private ClientWebSocket socket;
+        private bool running;
         public JsonWebsocket(Uri uri)
         {
             this.uri = uri;
@@ -24,16 +26,17 @@ namespace CharmBot
 
         public async Task Connect()
         {
+            running = true;
             cancellationToken = new CancellationTokenSource();
             cancellationRecieveToken = new CancellationTokenSource();
-            while (true)
+            while (running)
             {
                 using (socket = new ClientWebSocket())
                 {
                     try
                     {
                         await socket.ConnectAsync(uri, cancellationToken.Token);
-
+                        ConnectionStatusChanged?.Invoke(true);
                         JObject jObject = new JObject
                         {
                             ["type"] = "connect"
@@ -45,20 +48,28 @@ namespace CharmBot
                     catch (Exception)
                     {
                         socket = null;
+                        ConnectionStatusChanged?.Invoke(false);
                     }
                 }
                 await Task.Delay(1000);
             }
         }
 
-        public void Disconnect()
+        public void disconnectInternal()
         {
+            ConnectionStatusChanged?.Invoke(false);
             cancellationToken?.Cancel();
             cancellationRecieveToken?.Cancel();
             socket?.Dispose();
             cancellationToken = null;
             cancellationRecieveToken = null;
             socket = null;
+        }
+
+        public void Disconnect()
+        {
+            running = false;
+            disconnectInternal();
         }
 
         public async Task Send(JObject data)
@@ -86,7 +97,7 @@ namespace CharmBot
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
                         await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", cancellationToken.Token);
-                        Disconnect();
+                        disconnectInternal();
                         break;
                     }
 

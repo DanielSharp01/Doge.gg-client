@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace CharmBot
+namespace Doge.gg_client
 {
     public class ProcessMemoryReaderApi
     {
