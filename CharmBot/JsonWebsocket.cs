@@ -64,7 +64,7 @@ namespace CharmBot
         public async Task Send(JObject data)
         {
             data["uuid"] = uuid;
-            if (socket != null)
+            if (socket != null && cancellationToken != null)
             {
                 await socket.SendAsync(Encoding.UTF8.GetBytes(data.ToString(Formatting.None)), WebSocketMessageType.Text, true, cancellationToken.Token);
             }

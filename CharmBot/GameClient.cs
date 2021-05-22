@@ -104,20 +104,23 @@ namespace CharmBot
 
         public async Task Observe()
         {
-            await waitForGame();
-            ClientConnected?.Invoke(players, activePlayerName);
-#if CHARM_BOT
-            if (players.FirstOrDefault(p => p["summonerName"].ToString() == activePlayerName && p["championName"].ToString() == "Ahri") != null)
+            while (true)
             {
-                charmBotThread = new Thread(StartCharmBot);
-                charmBotThread.Start();
-            }
-#endif
-            await processEvents();
+                await waitForGame();
+                ClientConnected?.Invoke(players, activePlayerName);
 #if CHARM_BOT
-            charmBotThread?.Interrupt();
+                if (players.FirstOrDefault(p => p["summonerName"].ToString() == activePlayerName && p["championName"].ToString() == "Ahri") != null)
+                {
+                    charmBotThread = new Thread(StartCharmBot);
+                    charmBotThread.Start();
+                }
 #endif
-            ClientDisconnected?.Invoke();
+                await processEvents();
+#if CHARM_BOT
+                charmBotThread?.Interrupt();
+#endif
+                ClientDisconnected?.Invoke();
+            }
         }
 
         private async Task waitForGame()
