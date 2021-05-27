@@ -5,12 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Doge.gg_client" xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="Doge.gg client" Height="150" Width="550" Loaded="Window_Loaded" Unloaded="Window_Unloaded" Closing="Window_Closing">
+        Title="Doge.gg client" Height="150" Width="550" Loaded="Window_Loaded" Unloaded="Window_Unloaded" Closing="Window_Closing" StateChanged="Window_StateChanged">
     <Grid HorizontalAlignment="Center">
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock VerticalAlignment="Center">Doge.gg server</TextBlock>
-                <Rectangle Name="dogeGGIndicator" Width="30" Height="30" Margin="10 0 0 0" Fill="Red" Stroke="Black"></Rectangle>
+                <Rectangle Width="30" Height="30" Name="dogeGGIndicator"  Margin="10 0 0 0" Fill="Red" Stroke="Black"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20 0 0 0">
                 <TextBlock VerticalAlignment="Center">League client</TextBlock>

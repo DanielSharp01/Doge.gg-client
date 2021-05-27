@@ -1,8 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Pipes;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,19 +25,35 @@ namespace Doge.gg_client
     /// </summary>
     public partial class MainWindow : Window
     {
-        JsonWebsocket socket = new JsonWebsocket(new Uri("ws://localhost:5050"));
+        readonly Config config;
+        readonly JsonWebsocket socket;
         public TaskBarClickCommand TaskBarClickCommand { get; }
-        private bool forRealClose;
+        private CancellationTokenSource reopenToken = null;
+        private const string guid = "13c6835a-74c3-4c04-b7c4-fe11499e6bf4";
 
         public MainWindow()
         {
+            config = new Config();
+            socket = new JsonWebsocket(config);
             TaskBarClickCommand = new TaskBarClickCommand(this);
             DataContext = this;
+
+            using (var client = new NamedPipeClientStream(".", guid, PipeDirection.Out))
+            {
+                try
+                {
+                    client.Connect(100);
+                    Environment.Exit(0);
+                }
+                catch (TimeoutException)
+                {
+                    _ = AwaitForReopen();
+                }
+            }
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            
             socket.ConnectionStatusChanged += (status) =>
             {
                 dogeGGIndicator.Fill = status ? Brushes.LimeGreen : Brushes.Red;
@@ -84,9 +104,7 @@ namespace Doge.gg_client
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (forRealClose) return;
-            Hide();
-            e.Cancel = true;
+            reopenToken.Cancel();
         }
 
         private void Open_Clicked(object sender, RoutedEventArgs e)
@@ -96,15 +114,41 @@ namespace Doge.gg_client
 
         private void Close_Clicked(object sender, RoutedEventArgs e)
         {
-            forRealClose = true;
+            reopenToken.Cancel();
             Close();
+        }
+
+        private async Task AwaitForReopen()
+        {
+            reopenToken = new CancellationTokenSource();
+            using (NamedPipeServerStream pipeServer = new NamedPipeServerStream(guid, PipeDirection.In, 1, PipeTransmissionMode.Message, PipeOptions.CurrentUserOnly | PipeOptions.Asynchronous))
+            {
+                await pipeServer.WaitForConnectionAsync(reopenToken.Token);
+                ShowNormalize();
+            }
+            if (!reopenToken.IsCancellationRequested) _ = AwaitForReopen();
+        }
+
+        public void ShowNormalize()
+        {
+            WindowState = WindowState.Normal;
+            Show();
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Minimized)
+            {
+                WindowState = WindowState.Normal;
+                Hide();
+            }
         }
     }
 
     public class TaskBarClickCommand : ICommand
     {
-        Window window;
-        public TaskBarClickCommand(Window window)
+        MainWindow window;
+        public TaskBarClickCommand(MainWindow window)
         {
             this.window = window;
         }
@@ -117,7 +161,7 @@ namespace Doge.gg_client
 
         public void Execute(object parameter)
         {
-            window.Show();
+            window.ShowNormalize();
         }
     }
 }

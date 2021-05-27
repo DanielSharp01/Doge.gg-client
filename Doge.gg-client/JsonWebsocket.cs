@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -19,9 +20,9 @@ namespace Doge.gg_client
         private CancellationTokenSource cancellationRecieveToken;
         private ClientWebSocket socket;
         private bool running;
-        public JsonWebsocket(Uri uri)
+        public JsonWebsocket(Config config)
         {
-            this.uri = uri;
+            uri = new Uri(config.GetValue("server"));
         }
 
         public async Task Connect()
@@ -45,7 +46,7 @@ namespace Doge.gg_client
                         await receive(socket);
 
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
                         socket = null;
                         ConnectionStatusChanged?.Invoke(false);
@@ -75,7 +76,7 @@ namespace Doge.gg_client
         public async Task Send(JObject data)
         {
             data["uuid"] = uuid;
-            if (socket != null && cancellationToken != null)
+            if (socket != null && socket.State == WebSocketState.Open && cancellationToken != null)
             {
                 await socket.SendAsync(Encoding.UTF8.GetBytes(data.ToString(Formatting.None)), WebSocketMessageType.Text, true, cancellationToken.Token);
             }

@@ -33,4 +33,10 @@
     <Resource Include="icon.ico" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="config.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
