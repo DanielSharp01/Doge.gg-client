@@ -56,12 +56,12 @@ namespace Doge.gg_client
             Position = new Vector3(x, y, z);
             Health = reader.ReadFloat(memoryAddress + Offsets.ObjHealth);
             Team = reader.ReadInt(memoryAddress + Offsets.ObjTeam);
-            int name = reader.ReadInt(MemoryAddress + Offsets.ObjectName);
+            int name = reader.ReadInt(memoryAddress + Offsets.ObjName);
             if (name != 0)
             {
                 Name = reader.ReadCString(name, 256);
             }
-            
+
             int missilePointer = reader.ReadInt(MemoryAddress + Offsets.MissileSpellInfo);
             if (missilePointer == 0)
             {
@@ -89,6 +89,7 @@ namespace Doge.gg_client
             ActiveBuffs.Clear();
             int beginPtr = reader.ReadInt(MemoryAddress + Offsets.ObjBuffManager + Offsets.BuffManagerEntriesArray);
             int endPtr = reader.ReadInt(MemoryAddress + Offsets.ObjBuffManager + Offsets.BuffManagerEntriesArray + 0x4);
+            if (beginPtr > endPtr || beginPtr <= 0 || endPtr <= 0 || endPtr - beginPtr > 1000) return;
             for (int i = beginPtr; i < endPtr; i += 0x4)
             {
                 int buffPtr = reader.ReadInt(i);

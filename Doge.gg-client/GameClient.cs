@@ -131,6 +131,7 @@ namespace Doge.gg_client
         private async Task waitForGame()
         {
             gameRunning = false;
+            lastEventId = -1;
             events.Clear();
             while (true)
             {
@@ -239,6 +240,8 @@ namespace Doge.gg_client
                     }
                     Thread.Sleep(10);
                 }
+            }
+            catch (Exception) {
             }
             finally
             {
